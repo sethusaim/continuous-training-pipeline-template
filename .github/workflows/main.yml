@@ -28,7 +28,7 @@ jobs:
 
   start-runner:
     name: Continuous Deployment
-    needs: intergration
+    needs: integration
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
