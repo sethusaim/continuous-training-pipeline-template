@@ -60,4 +60,4 @@ jobs:
 
       - name: Run the training pipeline code
         run: |
-          aws sts get-caller-identity --query Account --output text > text.txt
+          aws sts get-caller-identity --query Account --output text
