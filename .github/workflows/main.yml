@@ -47,23 +47,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Update os packages and install other requirements
+      - name: Run the start up script
         run: |
-          sudo apt update -y
-          sudo apt-get update -y
-          sudo apt upgrade -y 
-          sudo apt install aws-cli -y
-          
+          bash scripts/start_up.sh
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-
-      # - name: Install the requirements
-      #   run: |
-      #     pip3 install -r requirements.txt
 
       - name: Run the training pipeline code
         run: |
