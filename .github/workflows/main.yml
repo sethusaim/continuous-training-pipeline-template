@@ -34,6 +34,10 @@ jobs:
           ec2-instance-type: t2.micro
           subnet-id: subnet-0aa14d10459ff4e19
           security-group-id: sg-056fde642ead9d50d
+          
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 
   run-train:
     name: Run training pipeline
