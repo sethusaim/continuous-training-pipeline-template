@@ -13,8 +13,22 @@ permissions:
   contents: read
 
 jobs:
+  integration:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Lint code
+        run: echo "Linting repository"
+
+      - name: Run unit tests
+        run: echo "Running unit tests"
+
   start-runner:
-    name: Start the self-hosted EC2 runner
+    name: Continuous Deployment
+    needs: intergration
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
@@ -40,7 +54,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 
   run-train:
-    name: Run training pipeline
+    name: Continuous Training
     needs: start-runner
     runs-on: ${{ needs.start-runner.outputs.label }}
     steps:
@@ -60,4 +74,24 @@ jobs:
 
       - name: Run the training pipeline code
         run: |
-          aws sts get-caller-identity --query Account --output text
+          aws --version
+
+  post-train:
+    name: Post Training Clean Up
+    needs: run-train
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Stop EC2 instance
+        run: |
+
+          aws ec2 terminate-instances --instance-ids ${{ needs.start-runner.outputs.ec2-instance-id }}
+      - name: Wait for EC2 instance to be terminated
+        run: |
+          aws ec2 wait instance-terminated --instance-ids ${{ needs.start-runner.outputs.ec2-instance-id }}
