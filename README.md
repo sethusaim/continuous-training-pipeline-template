@@ -25,5 +25,5 @@ on:
 ```
 We can change the cron expression accordingly
 
-# Credits and References 
+## Credits and References 
 1. https://github.com/machulav/ec2-github-runner
