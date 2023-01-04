@@ -1,13 +1,11 @@
 name: Run Training Pipeline
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "README.md"
-      - "LICENSE"
-
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - continuous-training
+  
 permissions:
   id-token: write
   contents: read
