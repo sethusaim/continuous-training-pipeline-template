@@ -44,10 +44,10 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ami-03d3eec31be6ef6f9
-          ec2-instance-type: t2.micro
-          subnet-id: subnet-0aa14d10459ff4e19
-          security-group-id: sg-056fde642ead9d50d
+          ec2-image-id: ${{ secrets.EC2_AMI_ID }}
+          ec2-instance-type: ${{ secrets.EC2_INSTANCE_TYPE }}
+          subnet-id: ${{ secrets.EC2_SUBNET_ID }}
+          security-group-id: ${{ secrets.EC2_SG_ID }}
 
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -83,7 +83,7 @@ jobs:
       - start-runner
     runs-on: ubuntu-latest
     steps:
-      - name: Stop EC2 instance
+      - name: Terminate EC2 instance
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
