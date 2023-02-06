@@ -34,7 +34,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
 
       - name: Start EC2 runner
         id: start-ec2-runner
@@ -42,10 +42,17 @@ jobs:
         with:
           mode: start
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          ec2-image-id: ${{ secrets.EC2_AMI_ID }}
-          ec2-instance-type: ${{ secrets.EC2_INSTANCE_TYPE }}
+          ec2-image-id: ami-0778521d914d23bc1
+          ec2-instance-type: t1.micro
           subnet-id: ${{ secrets.EC2_SUBNET_ID }}
           security-group-id: ${{ secrets.EC2_SG_ID }}
+
+      - name: Increase the EC2 EBS Volume
+        id: increase-ebs-volume
+        run: |
+          vol_id=$(aws ec2 describe-instances --instance-ids ${{ steps.start-ec2-runner.outputs.ec2-instance-id }} | jq -r ".Reservations[0].Instances[0].BlockDeviceMappings[0].Ebs.VolumeId") 
+          
+          aws ec2 modify-volume --size 50 --volume-id $vol_id
 
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
@@ -59,6 +66,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Extend the EC2 EBS Storage
+        run: |
+          sudo growpart /dev/xvda 1
+          
+          sudo resize2fs /dev/xvda1
+
       - name: Run the start up script
         run: |
           bash scripts/start_up.sh
@@ -68,7 +81,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
 
       - name: Run the training pipeline code
         run: |
@@ -85,7 +98,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
           aws ec2 terminate-instances --instance-ids ${{ needs.start-runner.outputs.ec2-instance-id }}
 
@@ -93,6 +106,6 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
           aws ec2 wait instance-terminated --instance-ids ${{ needs.start-runner.outputs.ec2-instance-id }}
